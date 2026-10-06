@@ -70,6 +70,39 @@ h3{margin:18px 0 8px;font-size:16px;border-left:5px solid var(--ink);padding-lef
 #exam .key .ans{break-inside:avoid;font-size:14px;margin-bottom:5px}
 @page{size:A4;margin:13mm}
 @media print{body{background:#fff}#start,#quiz,.btn,.noprint{display:none!important}.card{border:0}.wrap{max-width:none;padding:0}#exam .pg{border:0;padding:0;margin:0}#exam .key{break-before:page}#exam.nokey .key{display:none}}
+html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.btn:active,.chip:active{transform:scale(.97)}
+#tools{display:none}
+body.board{user-select:none;-webkit-user-select:none}
+body.board .wrap{max-width:1400px;padding:2vh 3vw 4vh}
+body.board #tools{display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px}
+body.board #tools .chip{font-size:20px;padding:10px 20px}
+body.board .bar{height:22px}
+body.board #quiz .card{padding:2.5vh 3vw}
+body.board .tag{font-size:22px;padding:4px 16px}
+body.board #num{font-size:22px}
+body.board #ask{font-size:30px!important;margin-top:6px}
+body.board .q{font-size:clamp(40px,5.5vw,80px);padding:2vh 2vw;margin:1vh 0 2vh}
+body.board #opts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+body.board #opts .opt{margin:0;min-height:11vh;font-size:clamp(24px,2.8vw,42px);padding:16px 22px;display:flex;align-items:center;gap:12px;border-width:3px;word-break:keep-all}
+body.board #opts .opt::before{font-size:1.15em}
+body.board .opt.ok::after,body.board .opt.no::after{margin-left:auto}
+body.board .exp{margin-top:1.5vh;font-size:clamp(20px,2vw,30px);padding:16px 20px;border-left-width:8px}
+body.board #next{font-size:clamp(26px,2.6vw,38px);padding:16px;min-height:8vh}
+body.board #start{padding:4vh 4vw}
+body.board #start .tt{font-size:48px}
+body.board #start h3{font-size:26px;margin-top:3vh}
+body.board #start .meta,body.board #start .sub{font-size:20px}
+body.board .chip{font-size:24px;padding:14px 26px;border-width:3px}
+body.board .row{gap:14px}
+body.board #start .btn{font-size:28px;padding:22px}
+body.board .paper .qi{font-size:19px}
+body.board #end .btn{font-size:26px;padding:20px}
+@media (max-width:760px){body.board #opts{grid-template-columns:1fr}}
+body.board .q.long{font-size:clamp(30px,3.8vw,58px)}
+body.board .q.xlong{font-size:clamp(26px,3vw,46px)}
+@media (max-height:820px){body.board .wrap{padding-top:1vh}body.board #tools{margin-bottom:6px}body.board #tools .chip{font-size:17px;padding:6px 14px}body.board .bar{height:14px;margin-bottom:8px}body.board .tag{font-size:18px}body.board #num{font-size:18px;margin-top:4px!important}body.board #ask{font-size:24px!important;margin-top:2px}body.board .q{padding:1.2vh 2vw;margin:.6vh 0 1.4vh}body.board #opts{gap:10px}body.board #opts .opt{min-height:0;padding:10px 18px;font-size:clamp(22px,2.6vw,34px)}body.board .exp{margin-top:1vh;padding:10px 16px;font-size:clamp(18px,1.8vw,24px)}body.board #next{min-height:0;padding:12px;margin-top:8px}}
+@media print{#tools{display:none!important}}
 </style>
 </head>
 <body>
@@ -77,18 +110,21 @@ h3{margin:18px 0 8px;font-size:16px;border-left:5px solid var(--ink);padding-lef
   <div id="start" class="card">
     <div class="tt">방언 능력 고사</div>
     <div class="meta"><span>제1교시 국어(방언) 영역</span><span>수험번호 (        )</span></div>
-    <p class="sub" style="margin:10px 0 0">※ 아래 ①~③의 시험 조건을 정한 뒤 [시험 시작]을 누르시오.</p>
+    <p class="sub" style="margin:10px 0 0">※ 아래 ①~④의 시험 조건을 정한 뒤 [시험 시작]을 누르시오.</p>
     <h3>① 지역 (여러 개 선택 가능)</h3>
     <div class="row" id="regs"></div>
     <h3>② 난이도</h3>
     <div class="row" id="lvs"></div>
     <h3>③ 문제 수</h3>
     <div class="row" id="cnts"></div>
+    <h3>④ 화면</h3>
+    <div class="row" id="scr"></div>
     <p class="sub" id="info" style="margin-top:14px"></p>
     <button class="btn" id="go" onclick="begin()">시험 시작</button>
     <button class="btn opt" id="mk" onclick="exam()" style="text-align:center">🖨️ 시험지(인쇄용) 만들기</button>
   </div>
   <div id="quiz" class="hide">
+    <div id="tools"><button class="chip" onclick="fullTog()">⛶ 전체 화면</button><button class="chip" onclick="quit(event)">⌂ 그만하기</button></div>
     <div class="bar"><i id="pg"></i></div>
     <div class="card">
       <span class="tag" id="reg"></span><span class="tag lv" id="lv"></span>
@@ -419,8 +455,17 @@ function draw(){
   var n=pool().length,c=$("cnts");c.innerHTML="";
   [10,20,30,50,0].forEach(function(v){chip(c,v?v+"문제":"전부",selN===v,function(){selN=v;draw()})});
   $("info").textContent=n?"선택한 조건에서 풀 수 있는 문제: 최대 "+n+"문제"+(selN>n?" (요청한 "+selN+"문제보다 적어서 "+n+"문제로 출제돼요)":""):"조건에 맞는 문제가 없어요. 지역·난이도를 확인하세요.";
-  $("go").disabled=!n;$("mk").disabled=!n
+  $("go").disabled=!n;$("mk").disabled=!n;
+  var sc=$("scr");sc.innerHTML="";
+  chip(sc,"기본 화면",!board,function(){setBoard(0)});
+  chip(sc,"🖥️ 전자칠판 (큰 글씨·터치)",board,function(){setBoard(1)})
 }
+var board=0,pickAt=0,quitAt=0;
+try{board=localStorage.getItem("dq-board")==="1"?1:0}catch(e){}
+function setBoard(v){board=v;document.body.classList.toggle("board",!!v);try{localStorage.setItem("dq-board",v?"1":"0")}catch(e){}draw()}
+document.body.classList.toggle("board",!!board);
+function fullTog(){var d=document,el=d.documentElement;try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{(el.requestFullscreen||el.webkitRequestFullscreen).call(el)}}catch(e){}}
+function quit(ev){var now=Date.now();if(now-quitAt<2500){quitAt=0;if(ev&&ev.currentTarget)ev.currentTarget.textContent="⌂ 그만하기";toSetup()}else{quitAt=now;var b=ev&&ev.currentTarget;if(b){var t=b.textContent;b.textContent="한 번 더 누르면 처음으로";setTimeout(function(){b.textContent="⌂ 그만하기"},2500)}}}
 function exam(){
   var p=shuffle(pool()),E=selN?p.slice(0,selN):p,n=E.length,k="",h='<div class="pg"><h1>방언 능력 고사</h1><div class="eh"><span>학년 반 번호 (          )</span><span>이름 (              )</span><span>점수 (      / '+n+')</span></div><p class="nt">※ 각 문제에서 알맞은 답을 하나만 고르시오.</p><div class="cols">';
   E.forEach(function(d,i){var o=shuffle([d[3]].concat(d[4])),a=o.indexOf(d[3]);
@@ -435,12 +480,14 @@ function toSetup(){$("end").classList.add("hide");$("quiz").classList.add("hide"
 function begin(){
   var p=shuffle(pool());Q=selN?p.slice(0,selN):p;idx=0;score=0;tally={};
   Q.forEach(function(d){tally[d[0]]=tally[d[0]]||[0,0];tally[d[0]][1]++});
-  $("start").classList.add("hide");$("end").classList.add("hide");$("quiz").classList.remove("hide");show()
+  $("start").classList.add("hide");$("end").classList.add("hide");$("quiz").classList.remove("hide");
+  if(board&&!(document.fullscreenElement||document.webkitFullscreenElement))fullTog();
+  show();window.scrollTo(0,0)
 }
 function show(){
-  var d=Q[idx];locked=false;
+  var d=Q[idx];locked=false;if(board)window.scrollTo(0,0);
   $("reg").textContent=label(d);$("lv").textContent=LV[d[1]];$("num").textContent=(idx+1)+" / "+Q.length;
-  $("q").textContent=d[1]==4?d[2]:"“"+d[2]+"”";$("ask").textContent=d[1]==4?"알맞은 방언을 고르세요":"이 말의 뜻은?";$("pg").style.width=(idx/Q.length*100)+"%";
+  $("q").textContent=d[1]==4?d[2]:"“"+d[2]+"”";var L=$("q").textContent.length;$("q").className="q"+(L>22?" xlong":L>12?" long":"");$("ask").textContent=d[1]==4?"알맞은 방언을 고르세요":"이 말의 뜻은?";$("pg").style.width=(idx/Q.length*100)+"%";
   $("exp").classList.add("hide");$("next").classList.add("hide");
   var box=$("opts");box.innerHTML="";
   d.o=shuffle([d[3]].concat(d[4]));d.o.forEach(function(t){
@@ -449,14 +496,15 @@ function show(){
   })
 }
 function pick(btn,right){
-  if(locked)return;locked=true;var d=Q[idx];d.my=btn.textContent;
+  if(locked)return;locked=true;pickAt=Date.now();var d=Q[idx];d.my=btn.textContent;
   if(right){score++;tally[d[0]][0]++;btn.classList.add("ok")}else btn.classList.add("no");
   Array.prototype.forEach.call($("opts").children,function(b){if(b.textContent===d[3])b.classList.add("ok")});
   $("exp").textContent=(right?"⭕ 정답! ":"❌ 아쉬워요. 정답은 '"+d[3]+"'. ")+d[5];
   $("exp").classList.remove("hide");
-  $("next").textContent=idx==Q.length-1?"결과 보기":"다음 문제";$("next").classList.remove("hide")
+  $("next").textContent=idx==Q.length-1?"결과 보기":"다음 문제";$("next").classList.remove("hide");
+  if(board)$("next").scrollIntoView({block:"nearest",behavior:"smooth"})
 }
-function next(){if(!locked)return;idx++;if(idx>=Q.length)finish();else show()}
+function next(){if(!locked||Date.now()-pickAt<450)return;idx++;if(idx>=Q.length)finish();else show()}
 function finish(){
   $("quiz").classList.add("hide");$("end").classList.remove("hide");
   var r=score/Q.length;
