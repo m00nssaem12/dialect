@@ -53,12 +53,14 @@ h3{margin:18px 0 8px;font-size:16px;border-left:5px solid var(--ink);padding-lef
 .qi .mk{position:absolute;left:0;top:2px;width:30px;height:30px;color:#d63b3b;font-weight:900}
 .qi .mk.o{border:3px solid #d63b3b;border-radius:50%}
 .qi .mk.x{font-size:34px;line-height:28px;text-align:center}
-.qi em{font-style:normal;font-size:11px;color:#777;margin-left:4px}
+.qi em{font-style:normal;font-size:11px;color:#555;margin-left:6px;border:1px solid #999;padding:0 5px;white-space:nowrap}
 .qi .sb{border:1px solid #1a1a1a;padding:4px 8px;margin:4px 0;font-weight:700}
 .qi .ch{padding-left:4px}
 .qi .ch.me{font-weight:800;text-decoration:underline;text-decoration-color:#d63b3b;text-decoration-thickness:2px}
 .qi .ch.rt{color:#d63b3b;font-weight:800}
 .qi .ex2{margin-top:4px;padding:4px 8px;background:#fdf1ef;border-left:3px solid #d63b3b;color:#8a2a22;font-size:13px}
+.sx{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}@media (max-width:560px){.sx{grid-template-columns:1fr}}
+.paper .cond{font-size:13px;font-weight:700;padding:6px 0;border-bottom:1px solid #1a1a1a}.paper .cond b{display:inline-block;border:1.5px solid #1a1a1a;padding:0 8px;margin-right:4px;font-size:12px}
 @media print{.cols2{column-count:2}.paper{border-width:2px}}
 #exam .pg{background:#fff;color:#111;border:1px solid #bbb;padding:22px 20px;margin-top:14px;font-size:15px}
 #exam h1{text-align:center;font-size:24px;margin:0 0 10px;letter-spacing:2px}
@@ -144,10 +146,9 @@ body.board .q.xlong{font-size:clamp(26px,3vw,46px)}
     <div class="paper">
       <div class="tt">방언 능력 고사</div>
       <div class="ph"><span>학년 반 번호 <input id="cl"></span><span>이름 <input id="nm"></span><span>날짜 <span id="dt"></span></span></div>
-      <div class="sc"><div class="gr"><span id="emoji"></span><b id="grade"></b><p id="msg"></p></div><div class="stamp" id="stamp"></div></div>
+      <div class="cond" id="cond"></div><div class="sc"><div class="gr"><span id="emoji"></span><b id="grade"></b><p id="msg"></p></div><div class="stamp" id="stamp"></div></div>
       <div class="cols2" id="items"></div>
-      <h3>지역별 점수</h3>
-      <div id="rsc"></div>
+      <div class="sx"><div><h3>지역별 점수</h3><div id="rsc"></div></div><div><h3>난이도별 점수</h3><div id="lsc"></div></div></div>
     </div>
     <button class="btn noprint" onclick="window.print()">시험지 인쇄하기</button>
     <button class="btn opt noprint" onclick="begin()" style="text-align:center">같은 조건으로 다시</button>
@@ -514,7 +515,13 @@ function finish(){
   $("msg").textContent=r>=.9?"방언을 거의 다 알아요!":r>=.7?"거의 다 맞혔어요!":"다시 도전하면 더 잘할 수 있어요!";
   var h="";
   Object.keys(R).forEach(function(k){if(tally[k]){var t=tally[k];h+='<div class="rs"><span>'+R[k]+'</span><span class="tr"><i style="width:'+(t[0]/t[1]*100)+'%"></i></span><span>'+t[0]+'/'+t[1]+'</span></div>'}});
-  $("rsc").innerHTML=h;sheet()
+  $("rsc").innerHTML=h;
+  var lt={};Q.forEach(function(d){var t=lt[d[1]]=lt[d[1]]||[0,0];t[1]++;if(d.my===d[3])t[0]++});
+  h="";[1,2,3,4].forEach(function(v){if(lt[v]){var t=lt[v];h+='<div class="rs"><span>'+LV[v]+'</span><span class="tr"><i style="width:'+(t[0]/t[1]*100)+'%"></i></span><span>'+t[0]+'/'+t[1]+'</span></div>'}});
+  $("lsc").innerHTML=h;
+  var rg=Object.keys(R).filter(function(k){return selR[k]}).map(function(k){return R[k]});
+  $("cond").innerHTML='<b>응시 조건</b> 지역: '+(rg.length==5?"전 지역":rg.join("·"))+' &nbsp;/&nbsp; 난이도: '+(selL?LV[selL]:"전체(섞어서)")+' &nbsp;/&nbsp; '+Q.length+'문제';
+  sheet()
 }
 function sheet(){
   var n=Q.length,pt=Math.round(score/n*100);
