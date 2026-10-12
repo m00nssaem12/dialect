@@ -26,6 +26,7 @@ h3{margin:18px 0 8px;font-size:16px;border-left:5px solid var(--ink);padding-lef
 .opt.ok{border-color:var(--acc);color:var(--acc);font-weight:800}.opt.ok::after{content:"  ○ 정답"}
 .opt.no{border-color:var(--acc);background:#fdf1ef}.opt.no::after{content:"  ／";color:var(--acc);font-weight:900}
 .row{display:flex;flex-wrap:wrap;gap:8px}
+#info b{color:var(--ink);font-size:1.1em}#info .tot{color:var(--sub)}
 .nkbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed #999}.nkl{font-size:14px;font-weight:800;color:var(--sub)}body.board .nkl{font-size:20px}
 .chip{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:3px;padding:8px 14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .chip.on{background:var(--ink);color:#fff}
@@ -519,7 +520,10 @@ function draw(){
   [1,2,3,4].forEach(function(v){chip(l,LV[v],selL===v,function(){selL=v;draw()})});
   var n=pool().length,c=$("cnts");c.innerHTML="";
   [10,20,30,50,0].forEach(function(v){chip(c,v?v+"문제":"전부",selN===v,function(){selN=v;draw()})});
-  $("info").textContent=n?"선택한 조건에서 풀 수 있는 문제: 최대 "+n+"문제"+(selN>n?" (요청한 "+selN+"문제보다 적어서 "+n+"문제로 출제돼요)":""):"조건에 맞는 문제가 없어요. 지역·난이도를 확인하세요.";
+  var m=selN?Math.min(selN,n):n;
+  $("info").innerHTML=n?"이번 시험: <b>"+m+"문제</b> <span class=\"tot\">"+(m<n?"(조건에 맞는 문제 "+n+"개 중에서 무작위로 뽑아요)":"(조건에 맞는 문제 전부, 순서는 무작위)")+"</span>"
+    +(selN>n?"<br>※ "+selN+"문제를 고르셨지만 조건에 맞는 문제가 "+n+"개뿐이라 "+n+"문제만 출제돼요.":"")
+    :"조건에 맞는 문제가 없어요. 지역·난이도를 확인하세요.";
   $("go").disabled=!n;$("mk").disabled=!n;
   var sc=$("scr");sc.innerHTML="";
   chip(sc,"기본 화면",!board,function(){setBoard(0)});
